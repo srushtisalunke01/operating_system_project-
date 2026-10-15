@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CPU Scheduling Simulator | OS Microproject (315319)</title>
+    <meta name="description" content="Interactive CPU Scheduling Simulator for Priority Scheduling and Round Robin algorithms created for OS Microproject 315319.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Background Decorator Gradients -->
+    <div class="bg-glow glow-1"></div>
+    <div class="bg-glow glow-2"></div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <header class="main-header">
+            <div class="logo-area">
+                <div class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
+                        <rect x="9" y="9" width="6" height="6"></rect>
+                        <line x1="9" y1="1" x2="9" y2="4"></line>
+                        <line x1="15" y1="1" x2="15" y2="4"></line>
+                        <line x1="9" y1="20" x2="9" y2="23"></line>
+                        <line x1="15" y1="20" x2="15" y2="23"></line>
+                        <line x1="20" y1="9" x2="23" y2="9"></line>
+                        <line x1="20" y1="15" x2="23" y2="15"></line>
+                        <line x1="1" y1="9" x2="4" y2="9"></line>
+                        <line x1="1" y1="15" x2="4" y2="15"></line>
+                    </svg>
+                </div>
+                <div>
+                    <h1>CPU Scheduling Simulator</h1>
+                    <p class="subtitle">Operating System (315319) Microproject • Priority & Round Robin</p>
+                </div>
+            </div>
+            <nav class="nav-links">
+                <a href="#input-section">Simulator</a>
+                <a href="#results-section">Results & Gantt</a>
+                <a href="#comparison-section">Comparison</a>
+                <a href="#education-section">About CPU Scheduling</a>
+                <a href="#algorithm-section">Algorithms</a>
+            </nav>
+        </header>
+
+        <!-- Notification / Alert Toast -->
+        <div id="toast-container" class="toast-container"></div>
+
+        <!-- Input & Control Dashboard -->
+        <section id="input-section" class="dashboard-section">
+            <div class="section-header">
+                <h2>1. Process Input & Configuration</h2>
+                <p>Add processes, set parameters, or load sample data to begin CPU execution simulation.</p>
+            </div>
+
+            <div class="grid-layout two-column">
+                <!-- Left Input Controls & Add Form -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h3>Add New Process</h3>
+                        <span class="badge info-badge">Priority Rule: Smaller # = Higher Priority</span>
+                    </div>
+
+                    <form id="add-process-form" class="process-form">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="process-id">Process ID</label>
+                                <input type="text" id="process-id" placeholder="e.g. P1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="arrival-time">Arrival Time (AT)</label>
+                                <input type="number" id="arrival-time" min="0" value="0" step="1" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="burst-time">Burst Time (BT)</label>
+                                <input type="number" id="burst-time" min="1" value="5" step="1" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="priority">Priority</label>
+                                <input type="number" id="priority" min="1" value="1" step="1" required>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary full-width">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            Add Process to Queue
+                        </button>
+                    </form>
+
+                    <hr class="divider">
+
+                    <!-- Global Config & Action Controls -->
+                    <div class="global-config">
+                        <div class="form-group">
+                            <label for="time-quantum">Round Robin Time Quantum (TQ)</label>
+                            <div class="input-with-hint">
+                                <input type="number" id="time-quantum" min="1" value="2" step="1" required>
+                                <small>Time slice allotted per process</small>
+                            </div>
+                        </div>
+
+                        <div class="action-buttons-grid">
+                            <button id="btn-sample-data" class="btn btn-secondary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                                Load Sample Data
+                            </button>
+                            <button id="btn-reset" class="btn btn-danger">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+                                Reset
+                            </button>
+                            <button id="btn-run-simulation" class="btn btn-success span-2">
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
+                                Run Simulation
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Process Table View -->
+                <div class="glass-card">
+                    <div class="card-header">
+                        <h3>Process Queue (<span id="process-count">0</span> Processes)</h3>
+                        <button id="btn-clear-all" class="btn-text danger-text">Clear All</button>
+                    </div>
+
+                    <div class="table-responsive">
+                        <table class="styled-table" id="process-input-table">
+                            <thead>
+                                <tr>
+                                    <th>Process ID</th>
+                                    <th>Arrival Time (AT)</th>
+                                    <th>Burst Time (BT)</th>
+                                    <th>Priority</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="process-table-body">
+                                <!-- Process rows rendered via JS -->
+                            </tbody>
+                        </table>
+                        <div id="empty-state" class="empty-state">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="9" y1="9" x2="15" y2="15"></line><line x1="15" y1="9" x2="9" y2="15"></line></svg>
+                            <p>No processes added yet.</p>
+                            <small>Click "Load Sample Data" or use the form on the left to add processes.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Simulation Results & Gantt Charts Section -->
+        <section id="results-section" class="dashboard-section">
+            <div class="section-header">
+                <h2>2. Simulation Results & Visual Gantt Charts</h2>
+                <p>Analyze step-by-step execution timeline, Gantt charts, and metrics for both scheduling algorithms.</p>
+            </div>
+
+            <!-- Priority Scheduling Card -->
+            <div class="glass-card result-card margin-bottom-lg">
+                <div class="card-header border-bottom">
+                    <div class="algo-title">
+                        <span class="algo-tag priority-tag">Non-Preemptive</span>
+                        <h3>Priority Scheduling</h3>
+                    </div>
+                    <div class="metrics-summary" id="priority-metrics-summary">
+                        <span class="metric-pill">Avg WT: <strong id="p-avg-wt">0.00</strong> ms</span>
+                        <span class="metric-pill">Avg TAT: <strong id="p-avg-tat">0.00</strong> ms</span>
+                        <span class="metric-pill">Avg RT: <strong id="p-avg-rt">0.00</strong> ms</span>
+                    </div>
+                </div>
+
+                <div class="gantt-container-wrapper">
+                    <h4 class="sub-heading">Gantt Chart Timeline</h4>
+                    <div class="gantt-chart-scroll">
+                        <div id="priority-gantt" class="gantt-chart">
+                            <!-- Gantt blocks generated by JS -->
+                        </div>
+                    </div>
+                    <div class="gantt-legend">
+                        <span class="legend-item"><span class="legend-box idle-box"></span> CPU Idle</span>
+                        <span class="legend-item"><span class="legend-box process-box"></span> Active Process</span>
+                    </div>
+                </div>
+
+                <h4 class="sub-heading">Detailed Computation Table</h4>
+                <div class="table-responsive">
+                    <table class="styled-table result-table">
+                        <thead>
+                            <tr>
+                                <th>Process ID</th>
+                                <th>Arrival Time (AT)</th>
+                                <th>Burst Time (BT)</th>
+                                <th>Priority</th>
+                                <th>Completion Time (CT)</th>
+                                <th>Turnaround Time (TAT)</th>
+                                <th>Waiting Time (WT)</th>
+                                <th>Response Time (RT)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="priority-result-body">
+                            <!-- Results generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Round Robin Card -->
+            <div class="glass-card result-card">
+                <div class="card-header border-bottom">
+                    <div class="algo-title">
+                        <span class="algo-tag rr-tag">Preemptive</span>
+                        <h3>Round Robin Scheduling (Time Quantum = <span id="display-tq">2</span>)</h3>
+                    </div>
+                    <div class="metrics-summary" id="rr-metrics-summary">
+                        <span class="metric-pill">Avg WT: <strong id="rr-avg-wt">0.00</strong> ms</span>
+                        <span class="metric-pill">Avg TAT: <strong id="rr-avg-tat">0.00</strong> ms</span>
+                        <span class="metric-pill">Avg RT: <strong id="rr-avg-rt">0.00</strong> ms</span>
+                    </div>
+                </div>
+
+                <div class="gantt-container-wrapper">
+                    <h4 class="sub-heading">Gantt Chart Timeline</h4>
+                    <div class="gantt-chart-scroll">
+                        <div id="rr-gantt" class="gantt-chart">
+                            <!-- Gantt blocks generated by JS -->
+                        </div>
+                    </div>
+                    <div class="gantt-legend">
+                        <span class="legend-item"><span class="legend-box idle-box"></span> CPU Idle</span>
+                        <span class="legend-item"><span class="legend-box process-box"></span> Active Process</span>
+                    </div>
+                </div>
+
+                <h4 class="sub-heading">Detailed Computation Table</h4>
+                <div class="table-responsive">
+                    <table class="styled-table result-table">
+                        <thead>
+                            <tr>
+                                <th>Process ID</th>
+                                <th>Arrival Time (AT)</th>
+                                <th>Burst Time (BT)</th>
+                                <th>Priority</th>
+                                <th>Completion Time (CT)</th>
+                                <th>Turnaround Time (TAT)</th>
+                                <th>Waiting Time (WT)</th>
+                                <th>Response Time (RT)</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rr-result-body">
+                            <!-- Results generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Performance Comparison Section -->
+        <section id="comparison-section" class="dashboard-section">
+            <div class="section-header">
+                <h2>3. Dynamic Performance Comparison</h2>
+                <p>Comparative evaluation between Non-Preemptive Priority and Round Robin Scheduling.</p>
+            </div>
+
+            <div class="glass-card">
+                <div class="comparison-grid">
+                    <!-- Average Waiting Time Comparison -->
+                    <div class="comparison-card">
+                        <h4>Average Waiting Time (WT)</h4>
+                        <div class="stat-bars">
+                            <div class="stat-row">
+                                <span class="stat-label">Priority Scheduling</span>
+                                <span class="stat-val" id="comp-p-wt">0.00 ms</span>
+                                <div class="bar-bg"><div class="bar-fill priority-bar" id="bar-p-wt" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Round Robin</span>
+                                <span class="stat-val" id="comp-rr-wt">0.00 ms</span>
+                                <div class="bar-bg"><div class="bar-fill rr-bar" id="bar-rr-wt" style="width: 0%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Average Turnaround Time Comparison -->
+                    <div class="comparison-card">
+                        <h4>Average Turnaround Time (TAT)</h4>
+                        <div class="stat-bars">
+                            <div class="stat-row">
+                                <span class="stat-label">Priority Scheduling</span>
+                                <span class="stat-val" id="comp-p-tat">0.00 ms</span>
+                                <div class="bar-bg"><div class="bar-fill priority-bar" id="bar-p-tat" style="width: 0%;"></div></div>
+                            </div>
+                            <div class="stat-row">
+                                <span class="stat-label">Round Robin</span>
+                                <span class="stat-val" id="comp-rr-tat">0.00 ms</span>
+                                <div class="bar-bg"><div class="bar-fill rr-bar" id="bar-rr-tat" style="width: 0%;"></div></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Conclusion Banner -->
+                <div class="conclusion-box" id="conclusion-box">
+                    <div class="conclusion-icon">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+                    </div>
+                    <div>
+                        <h4 id="conclusion-title">Algorithm Performance Analysis</h4>
+                        <p id="conclusion-text">Run the simulation to see dynamic performance comparison results based on your process queue input.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Educational Explanation Section -->
+        <section id="education-section" class="dashboard-section">
+            <div class="section-header">
+                <h2>4. About CPU Scheduling</h2>
+                <p>Fundamental concepts, terminologies, and definitions for Diploma Computer Engineering students.</p>
+            </div>
+
+            <div class="grid-layout three-column">
+                <div class="glass-card edu-card">
+                    <div class="edu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg></div>
+                    <h3>What is CPU Scheduling?</h3>
+                    <p>CPU Scheduling is the process by which the Operating System decides which process in the ready queue gets access to the CPU for execution, maximizing CPU utilization and system throughput.</p>
+                </div>
+
+                <div class="glass-card edu-card">
+                    <div class="edu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg></div>
+                    <h3>Priority Scheduling</h3>
+                    <p>Each process is assigned a priority value. The CPU is allocated to the process with the highest priority (in our simulator, smaller priority number = higher priority). In non-preemptive mode, once running, it executes till completion.</p>
+                </div>
+
+                <div class="glass-card edu-card">
+                    <div class="edu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"></polyline><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"></path></svg></div>
+                    <h3>Round Robin (RR)</h3>
+                    <p>A preemptive algorithm designed for time-sharing systems. Each process is given a small fixed slice of CPU time called a <strong>Time Quantum</strong>. If incomplete, it is moved to the back of the ready queue.</p>
+                </div>
+
+                <div class="glass-card edu-card">
+                    <div class="edu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><polyline points="17 11 19 13 23 9"></polyline></svg></div>
+                    <h3>Preemptive vs Non-Preemptive</h3>
+                    <p><strong>Preemptive:</strong> The OS can interrupt a running process before it finishes (e.g., Round Robin).<br><strong>Non-Preemptive:</strong> Once a process starts CPU execution, it holds the CPU until it finishes or requests I/O.</p>
+                </div>
+
+                <div class="glass-card edu-card">
+                    <div class="edu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg></div>
+                    <h3>Key Time Metrics</h3>
+                    <ul>
+                        <li><strong>Arrival Time (AT):</strong> Time when process enters Ready Queue.</li>
+                        <li><strong>Burst Time (BT):</strong> CPU execution time required by the process.</li>
+                        <li><strong>Time Quantum (TQ):</strong> Fixed CPU time slice allotted per turn in Round Robin.</li>
+                    </ul>
+                </div>
+
+                <div class="glass-card edu-card">
+                    <div class="edu-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg></div>
+                    <h3>Formula Reference</h3>
+                    <ul>
+                        <li><strong>Completion Time (CT):</strong> Time at which process finishes.</li>
+                        <li><strong>Turnaround Time (TAT):</strong> <code>TAT = CT - AT</code></li>
+                        <li><strong>Waiting Time (WT):</strong> <code>WT = TAT - BT</code></li>
+                        <li><strong>Response Time (RT):</strong> <code>RT = First Start Time - AT</code></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Algorithm Step-by-Step Section -->
+        <section id="algorithm-section" class="dashboard-section">
+            <div class="section-header">
+                <h2>5. Algorithm Step-by-Step Execution Rules</h2>
+                <p>Standard flow charts and logical procedures executed by the scheduling algorithms.</p>
+            </div>
+
+            <div class="grid-layout two-column">
+                <div class="glass-card">
+                    <div class="card-header border-bottom">
+                        <h3>Non-Preemptive Priority Scheduling Steps</h3>
+                    </div>
+                    <ol class="algo-steps">
+                        <li><strong>Start:</strong> Initialize current time = 0 and mark all processes as incomplete.</li>
+                        <li><strong>Read Input:</strong> Read Process ID, Arrival Time (AT), Burst Time (BT), and Priority.</li>
+                        <li><strong>Check Arrived Processes:</strong> Identify all processes with <code>AT &le; Current Time</code> that haven't executed.</li>
+                        <li><strong>Select Highest Priority:</strong> Pick the process with the smallest priority number. If tie, select smallest AT.</li>
+                        <li><strong>Execute Process:</strong> Run process completely for its full Burst Time (BT). Advance <code>Current Time += BT</code>.</li>
+                        <li><strong>Compute Metrics:</strong> Calculate CT, <code>TAT = CT - AT</code>, <code>WT = TAT - BT</code>, and <code>RT = First Start Time - AT</code>.</li>
+                        <li><strong>Check CPU Idle:</strong> If no process has arrived, advance time to next process AT.</li>
+                        <li><strong>Repeat:</strong> Continue until all processes finish execution.</li>
+                        <li><strong>Display Output:</strong> Render Gantt Chart timeline, calculation table, and averages.</li>
+                    </ol>
+                </div>
+
+                <div class="glass-card">
+                    <div class="card-header border-bottom">
+                        <h3>Preemptive Round Robin Scheduling Steps</h3>
+                    </div>
+                    <ol class="algo-steps">
+                        <li><strong>Start:</strong> Initialize ready queue, current time = 0, and track remaining burst times.</li>
+                        <li><strong>Read Input:</strong> Read Process ID, Arrival Time (AT), Burst Time (BT), and Time Quantum (TQ).</li>
+                        <li><strong>Initialize Queue:</strong> Add all processes with <code>AT = 0</code> into the ready queue.</li>
+                        <li><strong>Dequeue Process:</strong> Take the first process from the front of the ready queue.</li>
+                        <li><strong>Execute Time Quantum:</strong> Execute for <code>min(Remaining BT, TQ)</code>. Advance current time.</li>
+                        <li><strong>Enqueue New Arrivals:</strong> Add any processes that arrived during this time interval to the back of the ready queue.</li>
+                        <li><strong>Re-queue / Finish:</strong> If process has remaining BT, push it to back of queue. Otherwise, set CT.</li>
+                        <li><strong>Handle Idle CPU:</strong> If ready queue is empty and processes remain, advance time to next arrival.</li>
+                        <li><strong>Calculate Results:</strong> Compute CT, TAT, WT, and RT for each process.</li>
+                        <li><strong>Display Output:</strong> Render Round Robin Gantt Chart and summary statistics.</li>
+                    </ol>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="main-footer">
+            <p><strong>CPU Scheduling Simulator • OS Microproject (Course Code: 315319)</strong></p>
+            <p>Developed for Diploma Computer Engineering • HTML5, CSS3 &amp; Vanilla JavaScript</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
